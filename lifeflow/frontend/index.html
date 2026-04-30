@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LifeFlow — Sign In</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .auth-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:1.5rem; }
+    .auth-card  { background:var(--bg2); border:1px solid var(--border2); border-radius:var(--r); padding:2.25rem 2rem; width:100%; max-width:400px; box-shadow:0 24px 60px rgba(0,0,0,.4); }
+    .auth-logo  { text-align:center; margin-bottom:2rem; }
+    .auth-logo .wordmark { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--text); letter-spacing:-.5px; }
+    .auth-logo .wordmark span { color:var(--accent); }
+    .auth-logo .tagline { font-size:.75rem; color:var(--text3); letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+    .auth-heading { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:700; margin-bottom:1.5rem; }
+    .divider { display:flex; align-items:center; gap:.75rem; margin:1.25rem 0; color:var(--text3); font-size:.75rem; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .switch-link { text-align:center; margin-top:1.25rem; font-size:.82rem; color:var(--text3); }
+    .switch-link a { color:var(--accent); cursor:pointer; text-decoration:none; font-weight:500; }
+    .switch-link a:hover { color:var(--accent2); }
+    .demo-box { background:rgba(124,106,255,.08); border:1px solid rgba(124,106,255,.25); border-radius:var(--r2); padding:.75rem 1rem; margin-bottom:1.25rem; font-size:.8rem; color:var(--text2); }
+    .demo-box strong { color:var(--accent2); }
+    .demo-fill { color:var(--accent); cursor:pointer; font-size:.75rem; float:right; }
+    .demo-fill:hover { color:var(--accent2); }
+    #registerBox { display:none; }
+  </style>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="wordmark">Life<span>Flow</span></div>
+      <div class="tagline">Your Personal Growth OS</div>
+    </div>
+
+    <!-- ── LOGIN BOX ── -->
+    <div id="loginBox">
+      <div class="auth-heading">Welcome back 👋</div>
+
+      <div class="demo-box">
+        <strong>Demo account:</strong> demo@lifeflow.com / demo123
+        <span class="demo-fill" onclick="fillDemo()">Fill →</span>
+      </div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email</label>
+          <input class="form-input" type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <div class="error-msg" id="loginError"></div>
+        <button class="btn btn-primary btn-submit" type="submit">Sign In</button>
+      </form>
+
+      <div class="switch-link">
+        Don't have an account? <a onclick="toggleForms('register')">Create one</a>
+      </div>
+    </div>
+
+    <!-- ── REGISTER BOX ── -->
+    <div id="registerBox">
+      <div class="auth-heading">Create your account ✨</div>
+
+      <form id="registerForm" autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="regName">Full Name</label>
+          <input class="form-input" type="text" id="regName" placeholder="Abdullah Hasan" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regEmail">Email</label>
+          <input class="form-input" type="email" id="regEmail" placeholder="you@example.com" required autocomplete="email" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="regPassword">Password</label>
+            <input class="form-input" type="password" id="regPassword" placeholder="Min 6 chars" required autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regPassword2">Confirm</label>
+            <input class="form-input" type="password" id="regPassword2" placeholder="Repeat" required autocomplete="new-password" />
+          </div>
+        </div>
+        <div class="error-msg" id="registerError"></div>
+        <button class="btn btn-primary btn-submit" type="submit">Create Account</button>
+      </form>
+
+      <div class="switch-link">
+        Already have an account? <a onclick="toggleForms('login')">Sign in</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  function toggleForms(show) {
+    document.getElementById('loginBox').style.display    = show === 'login'    ? 'block' : 'none';
+    document.getElementById('registerBox').style.display = show === 'register' ? 'block' : 'none';
+  }
+
+  function fillDemo() {
+    document.getElementById('loginEmail').value    = 'demo@lifeflow.com';
+    document.getElementById('loginPassword').value = 'demo123';
+  }
+
+  // Seed demo user silently on page load (safe to run multiple times)
+  fetch('/api/auth/seed', { method: 'POST' }).catch(() => {});
+</script>
+</body>
+</html>

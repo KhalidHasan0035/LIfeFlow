@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LifeFlow — App</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Life<span>Flow</span></div>
+      <div class="logo-sub">Your personal growth OS</div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section">Main</div>
+
+      <button class="nav-item active" onclick="nav('dashboard', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="1" width="6" height="6" rx="1.5"/>
+          <rect x="9" y="1" width="6" height="6" rx="1.5"/>
+          <rect x="1" y="9" width="6" height="6" rx="1.5"/>
+          <rect x="9" y="9" width="6" height="6" rx="1.5"/>
+        </svg>
+        Dashboard
+      </button>
+
+      <button class="nav-item" onclick="nav('goals', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="6.5"/>
+          <circle cx="8" cy="8" r="3"/>
+          <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        Goals
+      </button>
+
+      <button class="nav-item" onclick="nav('tasks', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M1.5 4h13M1.5 8h13M1.5 12h8"/>
+          <circle cx="13.5" cy="12" r="2"/>
+        </svg>
+        Tasks
+      </button>
+
+      <div class="nav-section">Tracking</div>
+
+      <button class="nav-item" onclick="nav('routine', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="6.5"/>
+          <path d="M8 4.5V8l2.5 2"/>
+        </svg>
+        Daily Routine
+      </button>
+
+      <button class="nav-item" onclick="nav('habits', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 12L6 7l3 3 5-6"/>
+        </svg>
+        Habits
+      </button>
+
+      <button class="nav-item" onclick="nav('analytics', this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1.5" y="9"   width="3" height="5.5"/>
+          <rect x="6.5" y="6"   width="3" height="8.5"/>
+          <rect x="11.5" y="3"  width="3" height="11.5"/>
+        </svg>
+        Analytics
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="avatar" id="sidebarAvatar">--</div>
+        <div style="flex:1;min-width:0">
+          <div class="user-name" id="sidebarName">Loading…</div>
+          <div class="user-plan" id="sidebarPlan">—</div>
+        </div>
+        <button onclick="logout()" title="Logout" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:.2rem">⎋</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-right">
+        <div class="search-wrap">
+          <span class="search-ico">🔍</span>
+          <input class="search-input" type="text" placeholder="Search tasks…" id="searchInput" oninput="searchTasks(this.value)" />
+        </div>
+        <div class="date-badge" id="todayDateBadge"></div>
+        <button class="btn btn-primary" onclick="openModal('taskModal')">+ Add Task</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ───────────────── DASHBOARD ───────────────── -->
+      <div class="page active" id="page-dashboard">
+
+        <div class="stats-grid">
+          <div class="stat-card purple">
+            <div class="stat-label">Goals Active</div>
+            <div class="stat-value" id="dashGoals">—</div>
+            <div class="stat-sub">total goals set</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Tasks Done Today</div>
+            <div class="stat-value" id="dashDone">—</div>
+            <div class="stat-sub">completed today</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Current Streak</div>
+            <div class="stat-value" id="dashStreak">—</div>
+            <div class="stat-sub">days consistent</div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-label">Habit Score</div>
+            <div class="stat-value" id="dashHabitPct">—</div>
+            <div class="stat-sub">done today</div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="chart-card">
+            <div class="section-header">
+              <div class="section-title">Weekly Productivity</div>
+            </div>
+            <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="section-header">
+              <div class="section-title">Time Breakdown</div>
+            </div>
+            <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Today's Priority Tasks</div>
+          <button class="see-all" onclick="nav('tasks', document.querySelector('[onclick*=\'tasks\']'))">See all →</button>
+        </div>
+        <div class="task-list" id="dashTaskList"></div>
+      </div>
+
+      <!-- ───────────────── GOALS ───────────────── -->
+      <div class="page" id="page-goals">
+        <div class="section-header">
+          <div class="section-title">Your Goals</div>
+          <button class="btn btn-primary" onclick="openModal('goalModal')">+ New Goal</button>
+        </div>
+        <div class="goals-list" id="goalsList"></div>
+      </div>
+
+      <!-- ───────────────── TASKS ───────────────── -->
+      <div class="page" id="page-tasks">
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" id="tf-all"      onclick="filterTasks('all')">All</button>
+          <button class="btn btn-ghost"  id="tf-study"    onclick="filterTasks('study')">📚 Study</button>
+          <button class="btn btn-ghost"  id="tf-health"   onclick="filterTasks('health')">🏃 Health</button>
+          <button class="btn btn-ghost"  id="tf-personal" onclick="filterTasks('personal')">🙂 Personal</button>
+          <button class="btn btn-ghost"  id="tf-work"     onclick="filterTasks('work')">💼 Work</button>
+          <button class="btn btn-ghost"  style="margin-left:auto" onclick="openModal('taskModal')">+ Add Task</button>
+        </div>
+        <div class="task-list" id="fullTaskList"></div>
+      </div>
+
+      <!-- ───────────────── DAILY ROUTINE ───────────────── -->
+      <div class="page" id="page-routine">
+        <div class="section-header">
+          <div class="section-title">Daily Schedule</div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-ghost" onclick="shiftRoutineDay(-1)">← Yesterday</button>
+            <button class="btn btn-ghost" onclick="shiftRoutineDay(1)">Tomorrow →</button>
+            <button class="btn btn-primary" onclick="openModal('blockModal')">+ Add Block</button>
+          </div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom:1.25rem;display:flex;gap:1.5rem;align-items:center">
+          <div>
+            <div style="font-size:.7rem;color:var(--text3);margin-bottom:.25rem">Today's completion</div>
+            <div class="stat-value" style="font-size:1.8rem;color:var(--green)" id="routineDonePct">—</div>
+          </div>
+          <div style="flex:1;height:8px;background:var(--bg3);border-radius:99px;overflow:hidden">
+            <div style="height:100%;width:0%;background:var(--green);border-radius:99px;transition:width .5s" id="routineProgressBar"></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:.75rem;color:var(--text2)" id="routineDoneText">— / — tasks</div>
+          </div>
+        </div>
+
+        <div class="timeline" id="routineTimeline"></div>
+      </div>
+
+      <!-- ───────────────── HABITS ───────────────── -->
+      <div class="page" id="page-habits">
+        <div class="section-header">
+          <div class="section-title">Habit Tracker</div>
+          <button class="btn btn-primary" onclick="openModal('habitModal')">+ New Habit</button>
+        </div>
+        <div class="habits-grid" id="habitsGrid"></div>
+      </div>
+
+      <!-- ───────────────── ANALYTICS ───────────────── -->
+      <div class="page" id="page-analytics">
+        <div class="stats-grid" style="margin-bottom:1.25rem">
+          <div class="stat-card purple">
+            <div class="stat-label">Goals Active</div>
+            <div class="stat-value" id="aGoals">—</div>
+            <div class="stat-sub">total</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Tasks This Month</div>
+            <div class="stat-value" id="aMonthly">—</div>
+            <div class="stat-sub">completed</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Habit Score</div>
+            <div class="stat-value" id="aHabitPct">—</div>
+            <div class="stat-sub">today</div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-label">Longest Streak</div>
+            <div class="stat-value" id="aStreak">—</div>
+            <div class="stat-sub">days</div>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="a-card">
+            <div class="section-header"><div class="section-title">Weekly Completion</div></div>
+            <div class="a-chart"><canvas id="monthlyChart"></canvas></div>
+          </div>
+          <div class="a-card">
+            <div class="section-header"><div class="section-title">Category Breakdown</div></div>
+            <div class="a-chart"><canvas id="categoryChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="a-card" style="margin-top:1.25rem">
+          <div class="section-header"><div class="section-title">Day-by-day Completion</div></div>
+          <div class="weekly-summary" id="weeklySummary"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /app -->
+
+
+<!-- ════════════════════════════════════
+     MODALS
+═══════════════════════════════════════ -->
+
+<!-- Add Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Task</div>
+      <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
+    </div>
+    <form id="taskForm" onsubmit="handleAddTask(event)">
+      <div class="form-group">
+        <label class="form-label">Task Name</label>
+        <input class="form-input" type="text" id="taskName" placeholder="e.g. Complete Chapter 5 notes" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input form-select" id="taskCat">
+            <option value="study">📚 Study</option>
+            <option value="health">🏃 Health</option>
+            <option value="personal">🙂 Personal</option>
+            <option value="work">💼 Work</option>
+            <option value="other">⭐ Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-input" type="time" id="taskTime" value="09:00" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duration</label>
+        <select class="form-input form-select" id="taskDur">
+          <option>15 min</option>
+          <option>30 min</option>
+          <option selected>1 hour</option>
+          <option>1.5 hours</option>
+          <option>2 hours</option>
+          <option>3 hours</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('taskModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Goal Modal -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create New Goal</div>
+      <button class="modal-close" onclick="closeModal('goalModal')">✕</button>
+    </div>
+    <form id="goalForm" onsubmit="handleCreateGoal(event)">
+      <div class="form-group">
+        <label class="form-label">Goal Title</label>
+        <input class="form-input" type="text" id="goalTitle" placeholder="e.g. Read 10 books this month" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-input form-select" id="goalType">
+            <option value="daily">Daily</option>
+            <option value="weekly" selected>Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <select class="form-input form-select" id="goalColor">
+            <option value="#7c6aff">Purple</option>
+            <option value="#3ecf8e">Green</option>
+            <option value="#f5a623">Amber</option>
+            <option value="#23c5c5">Teal</option>
+            <option value="#ff6b9d">Pink</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sub-tasks <span style="color:var(--text3)">(comma separated)</span></label>
+        <input class="form-input" type="text" id="goalSubtasks" placeholder="Read 30 min, Take notes, Review" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('goalModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Goal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Habit Modal -->
+<div class="modal-overlay" id="habitModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Habit</div>
+      <button class="modal-close" onclick="closeModal('habitModal')">✕</button>
+    </div>
+    <form id="habitForm" onsubmit="handleAddHabit(event)">
+      <div class="form-group">
+        <label class="form-label">Habit Name</label>
+        <input class="form-input" type="text" id="habitName" placeholder="e.g. Read 20 minutes" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Icon (emoji)</label>
+          <input class="form-input" type="text" id="habitIcon" placeholder="📚" maxlength="4" value="⭐" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <select class="form-input form-select" id="habitColor">
+            <option value="#7c6aff">Purple</option>
+            <option value="#3ecf8e">Green</option>
+            <option value="#f5a623">Amber</option>
+            <option value="#23c5c5">Teal</option>
+            <option value="#ff6b9d">Pink</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('habitModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Habit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Routine Block Modal -->
+<div class="modal-overlay" id="blockModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Routine Block</div>
+      <button class="modal-close" onclick="closeModal('blockModal')">✕</button>
+    </div>
+    <form id="blockForm" onsubmit="handleAddBlock(event)">
+      <div class="form-group">
+        <label class="form-label">Activity Name</label>
+        <input class="form-input" type="text" id="blockName" placeholder="e.g. Morning jog" required />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input class="form-input" type="time" id="blockTime" value="08:00" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <select class="form-input form-select" id="blockDur">
+            <option>15 min</option>
+            <option>20 min</option>
+            <option>30 min</option>
+            <option selected>1 hr</option>
+            <option>1.5 hrs</option>
+            <option>2 hrs</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('blockModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Block</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✓</span>
+  <span id="toastMsg">Done!</span>
+</div>
+
+
+<!-- ════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════ -->
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/goals.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/habits.js"></script>
+<script src="js/routine.js"></script>
+<script src="js/analytics.js"></script>
+
+<script>
+// ── Auth guard ──────────────────────────────────────────
+const token = localStorage.getItem('lf_token');
+if (!token) { window.location.href = '/'; }
+
+const user = JSON.parse(localStorage.getItem('lf_user') || '{}');
+document.getElementById('sidebarAvatar').textContent = user.avatar || '??';
+document.getElementById('sidebarName').textContent   = user.name   || 'User';
+document.getElementById('sidebarPlan').textContent   = (user.plan  || 'free') + ' plan';
+
+function logout() {
+  localStorage.removeItem('lf_token');
+  localStorage.removeItem('lf_user');
+  window.location.href = '/';
+}
+
+// ── Helpers ─────────────────────────────────────────────
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openModal(id) {
+  document.getElementById(id)?.classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id)?.classList.remove('open');
+  // reset any form inside
+  document.getElementById(id)?.querySelector('form')?.reset();
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
+function showToast(msg, isError = false) {
+  const t  = document.getElementById('toast');
+  const ic = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.toggle('error', isError);
+  ic.textContent = isError ? '✕' : '✓';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Date badge ───────────────────────────────────────────
+(function() {
+  const d = new Date();
+  document.getElementById('todayDateBadge').textContent =
+    d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+})();
+
+// ── Navigation ───────────────────────────────────────────
+const pageTitles = {
+  dashboard: 'Dashboard',
+  goals:     'Goals',
+  tasks:     'Tasks',
+  routine:   'Daily Routine',
+  habits:    'Habits',
+  analytics: 'Analytics',
+};
+
+function nav(page, el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page)?.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+
+  // Load page data
+  if (page === 'dashboard') initDashboard();
+  if (page === 'goals')     initGoals();
+  if (page === 'tasks')     initTasks();
+  if (page === 'routine')   initRoutine();
+  if (page === 'habits')    initHabits();
+  if (page === 'analytics') initAnalytics();
+}
+
+// ── Routine: day shift ───────────────────────────────────
+let routineOffset = 0;
+function shiftRoutineDay(delta) {
+  routineOffset += delta;
+  const d = new Date();
+  d.setDate(d.getDate() + routineOffset);
+  initRoutine(d.toISOString().slice(0, 10));
+}
+
+// ── Task search ──────────────────────────────────────────
+let searchTimer;
+function searchTasks(q) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    if (!q.trim()) { initTasks(); return; }
+    try {
+      const all = await api.getTasks();
+      const filtered = all.filter(t =>
+        t.name.toLowerCase().includes(q.toLowerCase()) ||
+        t.category.toLowerCase().includes(q.toLowerCase())
+      );
+      renderTaskList(filtered, 'fullTaskList');
+      // switch to tasks page if not already there
+      const tasksPage = document.getElementById('page-tasks');
+      if (!tasksPage.classList.contains('active')) {
+        nav('tasks', document.querySelector('[onclick*="\'tasks\'"]'));
+      }
+    } catch(e) {}
+  }, 300);
+}
+
+// ── Initial load ─────────────────────────────────────────
+initDashboard();
+</script>
+</body>
+</html>
